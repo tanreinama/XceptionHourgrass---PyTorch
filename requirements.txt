@@ -1,0 +1,7 @@
+torch
+matplotlib
+tqdm
+numpy
+sklearn
+Pillow
+pycocotools
