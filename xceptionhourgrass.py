@@ -81,20 +81,20 @@ class HourglassNet(nn.Module):
     def __init__(self, depth, channel):
         super(HourglassNet, self).__init__()
         self.depth = depth
-        self.hg = []
+        hg = []
         for _ in range(self.depth):
-            self.hg.append(nn.ModuleList([
+            hg.append([
                 Block(channel,channel,3,1,start_with_mish=True,grow_first=True),
-                Block(channel,channel,3,1,start_with_mish=True,grow_first=True),
-                Block(channel,channel,3,1,start_with_mish=True,grow_first=True),
+                Block(channel,channel,2,2,start_with_mish=True,grow_first=True),
                 Block(channel,channel,3,1,start_with_mish=True,grow_first=True)
-            ]))
-        self.hg = nn.ModuleList(self.hg)
+            ])
+        hg[0].append(Block(channel,channel,3,1,start_with_mish=True,grow_first=True))
+        hg = [nn.ModuleList(h) for h in hg]
+        self.hg = nn.ModuleList(hg)
 
     def _hour_glass_forward(self, n, x):
         up1 = self.hg[n-1][0](x)
-        low1 = F.max_pool2d(x, 2, stride=2)
-        low1 = self.hg[n-1][1](low1)
+        low1 = self.hg[n-1][1](up1)
 
         if n > 1:
             low2 = self._hour_glass_forward(n-1, low1)
